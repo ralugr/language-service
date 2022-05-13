@@ -2,30 +2,29 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/ralugr/language-service/handlers"
+	"github.com/ralugr/language-service/logger"
 	"github.com/ralugr/language-service/repository"
 	"github.com/ralugr/language-service/service"
+	"net/http"
+	"os"
 )
 
 func main() {
 	bannedWordsRepo := repository.New("banned-words.json")
 	subscribers := repository.New("subscribers.json")
 
-	service := service.New(bannedWordsRepo, subscribers)
-	handler := handlers.New(service)
+	srv := service.New(bannedWordsRepo, subscribers)
+	handler := handlers.New(srv)
 
-	defer service.BannedWords.Close()
-	defer service.Subscribers.Close()
+	defer srv.BannedWords.Close()
+	defer srv.Subscribers.Close()
 
 	writePID()
 
-	log.Fatal(http.ListenAndServe(":8081", routes(handler)))
+	logger.Warning.Fatal(http.ListenAndServe(":8081", routes(handler)))
 }
 
 func routes(h handlers.Handler) http.Handler {
@@ -47,7 +46,7 @@ func writePID() {
 	f, err := os.Create("language_service.pid")
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Warning.Fatal(err)
 	}
 
 	defer f.Close()
@@ -55,6 +54,6 @@ func writePID() {
 	_, err2 := f.WriteString(fmt.Sprintf("%d", pid))
 
 	if err2 != nil {
-		log.Fatal(err2)
+		logger.Warning.Fatal(err2)
 	}
 }

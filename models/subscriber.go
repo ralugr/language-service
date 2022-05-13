@@ -2,6 +2,7 @@ package models
 
 import "fmt"
 
+// Subscriber used for adding a new subscriber
 type Subscriber struct {
 	Token string `json:"token"`
 	URL   string `json:"url"`

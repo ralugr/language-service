@@ -10,18 +10,24 @@ import (
 	"net/http"
 )
 
+// Handler stores all the available handlers
 type Handler struct {
 	s service.Service
 }
 
+// New constructor
 func New(s service.Service) Handler {
 	return Handler{s}
 }
 
+// Home route handlers
 func (h Handler) Home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Welcome to the language service!!</h1>"))
+	if _, err := w.Write([]byte("Welcome to the language service!!")); err != nil {
+		respond.Error(w, 500, "Encountered internal error")
+	}
 }
 
+// List returns the list of banned words
 func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	words, err := h.s.BannedWords.Read()
 
@@ -32,9 +38,12 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
-	w.Write(words)
+	if _, err := w.Write(words); err != nil {
+		respond.Error(w, 500, "Encountered internal error")
+	}
 }
 
+// Subscribe adds a new subscribers for banned list updates
 func (h Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	subscriber, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -59,6 +68,7 @@ func (h Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	respond.Success(w, "Subscribers were updated")
 }
 
+// UpdateList used to simulate a change to the banned list
 func (h Handler) UpdateList(w http.ResponseWriter, r *http.Request) {
 	list, err := io.ReadAll(r.Body)
 	if err != nil {

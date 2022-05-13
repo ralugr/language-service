@@ -10,11 +10,13 @@ import (
 	"net/http"
 )
 
+// Service stores all the operations and interactions needed to subscribe and notify clients
 type Service struct {
 	BannedWords repository.Base
 	Subscribers repository.Base
 }
 
+// New constructor
 func New(bannedWords repository.Base, subscribers repository.Base) Service {
 	return Service{
 		BannedWords: bannedWords,
@@ -22,6 +24,7 @@ func New(bannedWords repository.Base, subscribers repository.Base) Service {
 	}
 }
 
+// Notify sends notification to all subscribers
 func (s Service) Notify() {
 	logger.Info.Printf("Sending notifications to all subscribers")
 	var subscribers []models.Subscriber
@@ -62,6 +65,7 @@ func (s Service) Notify() {
 	logger.Info.Printf("Notified all subscribers")
 }
 
+// AddSubscriber adds a new subscriber
 func (s Service) AddSubscriber(subscriber models.Subscriber) error {
 	data, err := s.Subscribers.Read()
 	var existingSubscribers []models.Subscriber
@@ -95,6 +99,7 @@ func (s Service) AddSubscriber(subscriber models.Subscriber) error {
 	return nil
 }
 
+// tokenExists checks if the client is already subscribes based on the given token
 func (s Service) tokenExists(token string, list []models.Subscriber) bool {
 	for _, s := range list {
 		if s.Token == token {
