@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/ralugr/language-service/handlers"
@@ -9,7 +8,6 @@ import (
 	"github.com/ralugr/language-service/repository"
 	"github.com/ralugr/language-service/service"
 	"net/http"
-	"os"
 )
 
 func main() {
@@ -21,8 +19,6 @@ func main() {
 
 	defer srv.BannedWords.Close()
 	defer srv.Subscribers.Close()
-
-	writePID()
 
 	logger.Warning.Fatal(http.ListenAndServe(":8081", routes(handler)))
 }
@@ -38,22 +34,4 @@ func routes(h handlers.Handler) http.Handler {
 	mux.Post("/subscribe", h.Subscribe)
 
 	return mux
-}
-
-func writePID() {
-	pid := os.Getpid()
-
-	f, err := os.Create("language_service.pid")
-
-	if err != nil {
-		logger.Warning.Fatal(err)
-	}
-
-	defer f.Close()
-
-	_, err2 := f.WriteString(fmt.Sprintf("%d", pid))
-
-	if err2 != nil {
-		logger.Warning.Fatal(err2)
-	}
 }
